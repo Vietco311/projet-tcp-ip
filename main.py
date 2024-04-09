@@ -1,10 +1,16 @@
 import pickle
+from flask import Flask, request, jsonify
+import os
+
+app = Flask(__name__)
 
 class HuffmanCode:
     def __init__(self):
         self.file_content = ""
+        self.file_name = ""
         self.huffman_tree = []
         self.huffman_code = {}
+        self.encoded_text = ""
 
     def read_file(self, file_path):
         try:
@@ -74,18 +80,54 @@ class HuffmanCode:
         encoded_text = ""
         for char in self.file_content:
             encoded_text += self.huffman_code[char]
-        return encoded_text
+        self.encoded_text = encoded_text
 
     def save_huffman_code_to_file(self, file_path):
         with open(file_path, 'wb') as file:
             pickle.dump(self.huffman_code, file)
+        
 
     def load_huffman_code_from_file(self, file_path):
         with open(file_path, 'rb') as file:
             self.huffman_code = pickle.load(file)
+        for char in self.huffman_code:
+            self.encoded_text += self.huffman_code[char]
+
+    def compress(self, file):
+        self.file_content = file.read()
+        self.file_name = file.filename
+        self.generate_huffman_list()
+        self.build_huffman_tree()
+        self.create_code()
+        print("Arbre de Huffman :")
+        print(self)
+        print()
+        print("Affichage du code de Huffman :")
+        self.display_huffman_code()
+        print()
+        self.encode_text()
+        print("Texte encodé :")
+        print(self.encoded_text)
+
+        # Sauvegarde du code de Huffman dans un fichier binaire
+        self.save_huffman_code_to_file(f"upload_folder/{self.file_name}.bin")
+
+    def decompress(self, file_name):
+        self.load_huffman_code_from_file(f"upload_folder/{file_name}.bin")
+        # Exemple de décodage du texte encodé
+        decoded_text = ""
+        current_code = ""
+        for bit in self.encoded_text:
+            current_code += bit
+            for char, code in self.huffman_code.items():
+                if code == current_code:
+                    decoded_text += char
+                    current_code = ""
+                    break
+        return decoded_text
 
     def __str__(self):
-        return f"HuffmanCode - Fichier: {self.file_content}, Arbre: {self.huffman_tree}, Code: {self.huffman_code}"
+        return f"HuffmanCode - Fichier: {self.file_name}, Arbre: {self.huffman_tree}, Code: {self.huffman_code}"
 
 
 class Element:
@@ -140,40 +182,3 @@ class Noeud(Element):
 
     def __str__(self):
         return f"Noeud - {super().__str__()}"
-
-
-if __name__ == "__main__":
-    huffman = HuffmanCode()
-    huffman.read_file('./test.txt')
-    huffman.generate_huffman_list()
-    huffman.build_huffman_tree()
-    huffman.create_code()
-    print("Arbre de Huffman :")
-    print(huffman)
-    print()
-    print("Affichage du code de Huffman :")
-    huffman.display_huffman_code()
-    print()
-    encoded_text = huffman.encode_text()
-    print("Texte encodé :")
-    print(encoded_text)
-
-    # Sauvegarde du code de Huffman dans un fichier binaire
-    huffman.save_huffman_code_to_file("huffman_code.bin")
-
-    # Chargement du code de Huffman depuis le fichier binaire
-    huffman.load_huffman_code_from_file("huffman_code.bin")
-
-    # Exemple de décodage du texte encodé
-    decoded_text = ""
-    current_code = ""
-    for bit in encoded_text:
-        current_code += bit
-        for char, code in huffman.huffman_code.items():
-            if code == current_code:
-                decoded_text += char
-                current_code = ""
-                break
-
-    print("Texte décodé :")
-    print(decoded_text)
