@@ -20,7 +20,6 @@ class HuffmanCode:
             print("Le fichier spécifié est introuvable.")
 
     def generate_huffman_list(self):
-
         for char in self.file_content:
             found = False
             for element in self.huffman_tree:
@@ -64,37 +63,55 @@ class HuffmanCode:
             self._traverse_tree(node.right_child, code + "1")
 
 
-    def _coder(self, node, code):
-        if isinstance(node, Noeud):
-            self._coder(node.left_child, code + "1")
-            self._coder(node.right_child, code + "0")
-        elif isinstance(node, Feuille):
-            self.huffman_code[node.character] = code
-
     def display_huffman_code(self):
         print("Code de Huffman :")
         for char, code in self.huffman_code.items():
             print(f"{char}: {code}")
 
     def encode_text(self):
-        encoded_text = ""
         for char in self.file_content:
-            encoded_text += self.huffman_code[char]
-        self.encoded_text = encoded_text
-
-    def save_huffman_code_to_file(self, file_path):
-        with open(file_path, 'wb') as file:
-            pickle.dump(self.huffman_code, file)
-        
-
-    def load_huffman_code_from_file(self, file_path):
-        with open(file_path, 'rb') as file:
-            self.huffman_code = pickle.load(file)
-        for char in self.huffman_code:
             self.encoded_text += self.huffman_code[char]
 
+    def save_huffman_code_to_file(self, file_path):
+        with open(f"upload_folder/{file_path}.bin", 'wb') as file:
+            compressed_bits = ''.join(self.encoded_text)
+            current_byte = 0
+            bit_count = 0
+            
+            for bit in compressed_bits:
+                current_byte = (current_byte << 1) | int(bit)
+                bit_count += 1
+                
+                if bit_count == 8:
+                    file.write(bytes([current_byte]))
+                    current_byte = 0
+                    bit_count = 0
+                    
+            if bit_count > 0:
+                current_byte <<= (8 - bit_count)
+                file.write(bytes([current_byte]))
+        with open(f"huffman_code/{file_path}.bin", 'wb') as file:
+            pickle.dump(self.huffman_code, file)
+
+
+    def load_huffman_code_from_file(self, file_path):
+        with open(f"huffman_code/{file_path}.bin", 'rb') as file:
+            self.huffman_code = pickle.load(file)
+        encoded_bits = []
+        with open(f"upload_folder/{file_path}.bin", 'rb') as file:
+            byte = file.read(1)
+            while byte:
+                byte = ord(byte)
+                for i in range(7, -1, -1):
+                    bit = (byte >> i) & 1
+                    encoded_bits.append(str(bit))
+                byte = file.read(1)
+        self.encoded_text = encoded_bits
+
+
     def compress(self, file):
-        self.file_content = file.read()
+        self.file_content = file.read().decode('utf-8')
+        print(self.file_content, "shishishi")
         self.file_name = file.filename
         self.generate_huffman_list()
         self.build_huffman_tree()
@@ -110,21 +127,24 @@ class HuffmanCode:
         print(self.encoded_text)
 
         # Sauvegarde du code de Huffman dans un fichier binaire
-        self.save_huffman_code_to_file(f"upload_folder/{self.file_name}.bin")
+        self.save_huffman_code_to_file(self.file_name)
 
     def decompress(self, file_name):
-        self.load_huffman_code_from_file(f"upload_folder/{file_name}.bin")
-        # Exemple de décodage du texte encodé
+        self.load_huffman_code_from_file(file_name)
         decoded_text = ""
         current_code = ""
+        print(self.encoded_text, "2222222")
         for bit in self.encoded_text:
             current_code += bit
             for char, code in self.huffman_code.items():
-                if code == current_code:
-                    decoded_text += char
-                    current_code = ""
+                if current_code.startswith(code):
+                    if current_code == code:
+                        decoded_text += char
+                        current_code = ""
                     break
         return decoded_text
+
+
 
     def __str__(self):
         return f"HuffmanCode - Fichier: {self.file_name}, Arbre: {self.huffman_tree}, Code: {self.huffman_code}"

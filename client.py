@@ -40,6 +40,8 @@ if __name__ == '__main__':
     # Test de la fonctionnalité de récupération de la liste des fichiers
     get_file_list()
 
+
+        # Test de la fonctionnalité de téléchargement de fichier
     file_to_upload = 'test.txt'  # Remplacez par le chemin absolu du fichier que vous souhaitez télécharger
     upload_file(file_to_upload)
 
@@ -47,5 +49,4 @@ if __name__ == '__main__':
     file_to_download = 'test.txt'  # Remplacez par le nom du fichier que vous souhaitez télécharger
     download_file(file_to_download)
 
-    # Test de la fonctionnalité de téléchargement de fichier
 
