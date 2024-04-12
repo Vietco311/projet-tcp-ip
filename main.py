@@ -1,5 +1,6 @@
 import pickle
 from flask import Flask, request, jsonify
+from docx import Document
 import os
 
 app = Flask(__name__)
@@ -110,8 +111,11 @@ class HuffmanCode:
 
 
     def compress(self, file):
-        self.file_content = file.read().decode('utf-8')
-        print(self.file_content, "shishishi")
+        if file.filename.endswith(".doc") or file.filename.endswith(".docx"):
+            doc = Document(file.filename)
+            self.file_content = '\n'.join(paragraph.text for paragraph in doc.paragraphs)
+        else:
+             self.file_content = file.read().decode('utf-8')       
         self.file_name = file.filename
         self.generate_huffman_list()
         self.build_huffman_tree()
@@ -133,7 +137,6 @@ class HuffmanCode:
         self.load_huffman_code_from_file(file_name)
         decoded_text = ""
         current_code = ""
-        print(self.encoded_text, "2222222")
         for bit in self.encoded_text:
             current_code += bit
             for char, code in self.huffman_code.items():
