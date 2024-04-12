@@ -46,11 +46,11 @@ if __name__ == '__main__':
 
 
         # Test de la fonctionnalité de téléchargement de fichier
-    file_to_upload = 'Projet TCP-IP.docx'  # Remplacez par le chemin absolu du fichier que vous souhaitez télécharger
+    file_to_upload = 'revisions_1.txt'  # Remplacez par le chemin absolu du fichier que vous souhaitez télécharger
     upload_file(file_to_upload)
 
     # Test de la fonctionnalité de téléchargement de fichier
-    file_to_download = 'Projet TCP-IP.docx'  # Remplacez par le nom du fichier que vous souhaitez télécharger
+    file_to_download = 'revisions_1.txt'  # Remplacez par le nom du fichier que vous souhaitez télécharger
     download_file(file_to_download)
 
 
