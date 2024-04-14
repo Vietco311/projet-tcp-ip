@@ -41,27 +41,19 @@ class HuffmanCode:
             new_node = Noeud(left_element.occurrence + right_element.occurrence, left_element, right_element)
             self.huffman_tree.append(new_node)
             self.huffman_tree.sort(key=lambda x: x.occurrence, reverse=True)
-            
-    def generate_leaves(self):
-        char_count = {}
-        for char in self.file_content:
-            char_count[char] = char_count.get(char, 0) + 1
-                   
-        self.huffman_tree = [Feuille(count, char) for char, count in char_count.items()]
-        self.huffman_tree.sort(key=lambda x: x.occurrence, reverse=True)
 
     def create_code(self):
         if not self.huffman_tree:
             return
         root = self.huffman_tree[0]
-        self._traverse_tree(root, '')
+        self.traverse_tree(root, '')
 
-    def _traverse_tree(self, node, code):
+    def traverse_tree(self, node, code):
         if isinstance(node, Feuille):
             self.huffman_code[node.character] = code
         elif isinstance(node, Noeud):
-            self._traverse_tree(node.left_child, code + "0")
-            self._traverse_tree(node.right_child, code + "1")
+            self.traverse_tree(node.left_child, code + "0")
+            self.traverse_tree(node.right_child, code + "1")
 
 
     def display_huffman_code(self):
@@ -72,6 +64,14 @@ class HuffmanCode:
     def encode_text(self):
         for char in self.file_content:
             self.encoded_text += self.huffman_code[char]
+
+    def taux_compression(self, fichier_original, fichier_compressé, code_huffman):
+        taille_original = os.path.getsize(fichier_original)
+        taille_compressé = os.path.getsize(fichier_compressé)
+        taille_code = os.path.getsize(code_huffman)
+        taux = ((taille_original - (taille_compressé + taille_code)) / taille_original) * 100
+        print(f"Le taux de compression est de {taux:.2f}%")    
+
 
     def save_huffman_code_to_file(self, file_path):
         with open(f"upload_folder/{file_path}.bin", 'wb') as file:
@@ -93,7 +93,7 @@ class HuffmanCode:
                 file.write(bytes([current_byte]))
         with open(f"huffman_code/{file_path}.bin", 'wb') as file:
             pickle.dump(self.huffman_code, file)
-
+        self.taux_compression(f"{file_path}", f"upload_folder/{file_path}.bin", f"huffman_code/{file_path}.bin")
 
     def load_huffman_code_from_file(self, file_path):
         with open(f"huffman_code/{file_path}.bin", 'rb') as file:
@@ -171,7 +171,7 @@ class Element:
     def __lt__(self, other):
         return self.occurrence < other.occurrence
 
-    def __str__(self):
+    def __repr__(self):
         return f"Occurrence: {self.occurrence}"
 
 
@@ -180,13 +180,8 @@ class Feuille(Element):
         super().__init__(occurrence)
         self.character = character
 
-    def __eq__(self, other):
-        if isinstance(other, Feuille):
-            return self.character == other.character
-        return False
-
-    def __str__(self):
-        return f"Feuille - Caractère: {self.character}, {super().__str__()}"
+    def __repr__(self):
+        return f"Feuille - Caractère: {self.character}"
 
 
 class Noeud(Element):
@@ -203,5 +198,5 @@ class Noeud(Element):
     def right_child(self):
         return self.right
 
-    def __str__(self):
-        return f"Noeud - {super().__str__()}"
+    def __repr__(self):
+        return f"Noeud({self.left}, {self.right})"
