@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify
-from service import Service
 from main import HuffmanCode
 from flask_sqlalchemy import SQLAlchemy
 
